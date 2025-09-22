@@ -34,14 +34,15 @@ contract RideChain{
         publicGoodFund = _publicGoodFund;
     }
 
+    //!-Modify this function so that it takes the current time without having to pass it as an argument.
     function startRide(
         address _driver,
         uint120 _amount,
-        bytes32 _commitment 
+        bytes32 _commitment,
+        uint64 _startTime 
     ) external{
         require(_driver != address(0), "Invalid driver");
         require(commitments[_commitment], "Commitment not registered");
-        uint64 _startTime = uint64(block.timestamp); // take current block time
         bytes32 rideId = keccak256(abi.encodePacked(msg.sender, _driver, _startTime));
         require(rides[rideId].rider == address(0), "Ride already exists");
         rides[rideId] = Ride(msg.sender, _driver, _startTime, 0, _amount, 0);//amount is pre-determined
@@ -49,10 +50,10 @@ contract RideChain{
         emit RideStarted(rideId, msg.sender, _driver, _amount);
     }
 
+    //!-Ensure that only the driver can call finalize rides.
     function finalizeRide(bytes32 rideId) external{
         Ride storage ride = rides[rideId];
         require(ride.status == 0, "Ride already finalized/reversed");
-        require(msg.sender == ride.driver, "Only driver can finalize");
         ride.endTime = uint64(block.timestamp);
         ride.status = 1;
         RIDE.transfer(ride.driver, ride.amount);
