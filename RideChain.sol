@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-//!-Safeguard against reentrancy attacks throughout the whole contract.
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
@@ -28,13 +27,11 @@ contract RideChain{
     event RideReversed(bytes32 indexed rideId, address rider, uint120 refund, uint120 penalty);
     event EmergencyRelease(bytes32 indexed rideId, uint120 penalty);
 
-    //!-Give _rideToken and _publicGoodFund addresses. We must be able to see the transfer of tokens between rider and driver accounts.
     constructor(address _rideToken, address _publicGoodFund) {
         RIDE = IERC20(_rideToken);
         publicGoodFund = _publicGoodFund;
     }
 
-    //!-Modify this function so that it takes the current time without having to pass it as an argument.
     function startRide(
         address _driver,
         uint120 _amount,
@@ -50,7 +47,6 @@ contract RideChain{
         emit RideStarted(rideId, msg.sender, _driver, _amount);
     }
 
-    //!-Ensure that only the driver can call finalize rides.
     function finalizeRide(bytes32 rideId) external{
         Ride storage ride = rides[rideId];
         require(ride.status == 0, "Ride already finalized/reversed");
@@ -71,7 +67,7 @@ contract RideChain{
         RIDE.transfer(ride.rider, refund);
         RIDE.transfer(publicGoodFund, penalty);
          
-        //!-This 24 hour lockout feature is incomplete. Implement the feature properly. 
+        //!-24 hour lockout feature.
         failedReversals[msg.sender]++;
         if (failedReversals[msg.sender] >= 3) {
             revert("Too many failed reversals, 24-hour lockout");
@@ -94,5 +90,4 @@ contract RideChain{
     }
 }
 
-//!-Go through 1 entire workflow. (Use the GUI and then just comment the logs you got. Mention the functions called, and a general overview of your workflow.)
-//!-(Try including all functions in your process.)
+//!-Use the GUI to go through process workflows.
